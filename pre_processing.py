@@ -11,6 +11,9 @@ def pre_processing(filename_speech, filename_wind, SNRin):
 	######### PRE-PROCESSING: ########################
 
 	# usage:
+	# filename_wind = "data/test_raw/wind/wind2.wav"
+	# filename_speech = "data/test_raw/female1.wav"
+	# SNRin = 0 # input SNR
 	# (y,x,wn) = pre_processing(filename_speech, filename_wind, SNRin)
 
 	# load files
@@ -24,7 +27,10 @@ def pre_processing(filename_speech, filename_wind, SNRin):
 	# Crop signals so that they have same size
 	Lx = x.size
 	Lwn = wn.size
-	wn = wn[0:Lx] # crop signal
+	L = min(Lx,Lwn)
+
+	wn = wn[0:L] # crop signal
+	x = x[0:L]
 
 	# Normalize wind to desired SNR:
 	wn = wn * np.sqrt(np.sum(x**2)/(np.sum(wn**2)*(10**(SNRin/10))))
@@ -32,5 +38,9 @@ def pre_processing(filename_speech, filename_wind, SNRin):
 	# Create mixture:
 	y = x + wn # Noisy signal
 
-
 	return(y,x,wn)
+
+	# # Outputs:
+	# y: mixture
+	# x: clean speech
+	# wn: wind
