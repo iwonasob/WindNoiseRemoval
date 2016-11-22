@@ -5,23 +5,18 @@ from scipy import signal
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from pre_processing import *
+
 
 ######### PRE-PROCESSING: ########################
 
-filename_wind = "../data/test/wind/wind1.wav"
-filename_speech = "../data/test/female1.wav"
+# Inputs:
+filename_wind = "data/test_raw/wind/wind1.wav"
+filename_speech = "data/test_raw/female1.wav"
+SNRin = 0 # input SNR
 
-## load files
-[sr_wn, wn]=read(filename_wind)
-[sr_x, x]=read(filename_speech)
-
-SNRin = 5
-
-# normalize:
-wn = wn * np.sqrt(np.sum(x**2)/(np.sum(wn**2)*10**(SNRin/10)))
-
-
-y = x + wn # Noisy signal
+# pre-processing:
+(y,x,wn) = pre_processing(filename_speech, filename_wind, SNRin)
 
 
 #############  STFT  #########################
@@ -59,4 +54,3 @@ y = x + wn # Noisy signal
 
 ## Output
 
-SNRout = 10*np.log(np.sum(x**2)/(np.sum(wn**2)))
