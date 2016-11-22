@@ -1,9 +1,10 @@
 import numpy as np
-import librosa
-from scipy.io.wavfile import *
-from scipy import signal
-import matplotlib.pyplot as plt
-import seaborn as sns
+#import librosa
+import scipy.io.wavfile
+
+#from scipy import signal
+#import matplotlib.pyplot as plt
+#import seaborn as sns
 
 
 def pre_processing(filename_speech, filename_wind, SNRin):
@@ -17,8 +18,8 @@ def pre_processing(filename_speech, filename_wind, SNRin):
 	# (y,x,wn) = pre_processing(filename_speech, filename_wind, SNRin)
 
 	# load files
-	[sr_wn, wn]=read(filename_wind)
-	[sr_x, x]=read(filename_speech)
+	[sr_wn, wn]=scipy.io.wavfile.read(filename_wind)
+	[sr_x, x]=scipy.io.wavfile.read(filename_speech)
 
 	# Normalize
 	x = x/np.max(abs(x));
@@ -38,7 +39,7 @@ def pre_processing(filename_speech, filename_wind, SNRin):
 	# Create mixture:
 	y = x + wn # Noisy signal
 
-	return(y,x,wn)
+	return(x, y, sr_x)
 
 	# # Outputs:
 	# y: mixture

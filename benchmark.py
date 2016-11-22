@@ -1,0 +1,74 @@
+# -*- coding: utf-8 -*-
+
+import numpy as np
+import os.path
+from pre_processing import pre_processing
+from compute_snr import compute_snr
+import scipy.io.wavfile
+
+# Example of how to define f
+# Simple case, no extra parameters:
+#   f = lambda x, x_fs: fantastic_wind_remover(x, x_fs)
+# Second case, extra parameters:
+#   f = lambda x, x_fs: amazing_wind_remover(x, x_fs, fixed_param1, fixed_param2)
+
+#def benchmark(f, dataset, of):
+def benchmark(f, dataset, generate_wav=False):
+    
+    of = lambda x_true, x: compute_snr(x_true, x)
+    
+    wind_f_stem = os.path.join('data', 'test_raw', 'wind')
+    voice_f_stem = os.path.join('data', 'test_raw')
+    
+    out_stem = 'benchmark_'
+    
+    voice_f = ('female1', 'female2', 'female3', 'male1', 'male2', 'male3')
+    
+    if dataset == 0:
+        snr_in = 0
+        wind_f = 'wind1'
+    elif dataset == 1:
+        snr_in = -5
+        wind_f = 'wind1'
+    elif dataset == 2:
+        snr_in = -10
+        wind_f = 'wind1'
+    elif dataset == 3:
+        snr_in = 0
+        wind_f = 'wind2'
+    elif dataset == 4:
+        snr_in = -5
+        wind_f = 'wind2'
+    elif dataset == 5:
+        snr_in = -10
+        wind_f = 'wind2'
+        
+    fn = len(voice_f)
+    
+    y = list(range(fn))
+    x = list(range(fn))
+    x_noisy = list(range(fn))
+        
+    x_fs = list(range(fn))
+    q_input = np.zeros(fn)
+    q_output= np.zeros(fn)
+    
+    for fi in range(fn):
+        filename_speech = os.path.join(voice_f_stem, voice_f[fi] + '.wav')
+        filename_wind = os.path.join(wind_f_stem, wind_f + '.wav')
+        
+        x, x_noisy, x_fs[fi] = pre_processing(filename_speech, filename_wind, snr_in)
+        y[fi] = f(x_noisy, x_fs[fi])
+        q_input[fi] = of(x, x_noisy)
+        q_output[fi] = of(x, y[fi])
+        
+        if generate_wav:
+            i_f = out_stem + voice_f[fi] + '_in.wav'
+            o_f = out_stem + voice_f[fi] + '_out.wav'
+            scipy.io.wavfile.write(i_f, x_fs[fi], x_noisy)
+            scipy.io.wavfile.write(o_f, x_fs[fi], y[fi])
+    
+    q = q_output - q_input
+    y_fs = x_fs
+    
+    return (q, y, y_fs, q_input, q_output)
