@@ -1,9 +1,9 @@
 import numpy as np
+import os.path
 import librosa
+import scipy.io.wavfile
 from scipy.io.wavfile import *
-from scipy import signal
-import matplotlib.pyplot as plt
-import seaborn as sns
+
 
 
 def pre_processing(filename_speech, filename_wind, SNRin):
@@ -17,8 +17,8 @@ def pre_processing(filename_speech, filename_wind, SNRin):
 	# (y,x,wn) = pre_processing(filename_speech, filename_wind, SNRin)
 
 	# load files
-	[sr_wn, wn]=read(filename_wind)
-	[sr_x, x]=read(filename_speech)
+	[sr_wn, wn]=scipy.io.wavfile.read(filename_wind)
+	[sr_x, x]=scipy.io.wavfile.read(filename_speech)
 
 	# Normalize
 	x = x/np.max(abs(x));
@@ -38,9 +38,23 @@ def pre_processing(filename_speech, filename_wind, SNRin):
 	# Create mixture:
 	y = x + wn # Noisy signal
 
-	return(y,x,wn)
+	return(x, y, sr_x)
 
 	# # Outputs:
 	# y: mixture
 	# x: clean speech
 	# wn: wind
+
+def prepare_training_data():
+	filename_wind_train = os.path.join('data', 'train', 'wind_train_1min.wav')
+
+	## audio parameters
+	n_fft = 512
+	hop_size = 128
+	gamma = 2
+
+	[sr, w_train ] = read(filename_wind_train)
+	wind_stft = librosa.core.stft(w_train, n_fft, hop_size)
+	magnitude_wind=np.abs(wind_stft)**gamma
+	magnitude_wind_norm=magnitude_wind/np.max(magnitude_wind)
+	return magnitude_wind_norm, sr, n_fft, hop_size, gamma
