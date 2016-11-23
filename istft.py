@@ -7,7 +7,7 @@ class ISTFT():
     Input should be a complex spectrogram, output is a signal vector
     usage:
     istft=ISTFT( window=None, fft_size=n_fft, hop_size=hop_size, sample_rate=sr)
-    y=istft.process(spectrogram)
+    y=istft.process(Y_STFT)
     """
 
     def __init__(self, window=None, fft_size=1024, hop_size=512, sample_rate=44100):
