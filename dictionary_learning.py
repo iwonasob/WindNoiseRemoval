@@ -10,6 +10,7 @@ from sklearn.linear_model import OrthogonalMatchingPursuit
 from sklearn.linear_model import OrthogonalMatchingPursuitCV
 
 from pre_processing import *
+from istft import *
 
 import pickle
 
@@ -139,10 +140,15 @@ librosa.display.specshow(np.log(D+eps),fs,hop_size,x_axis="time", y_axis="log")
 # Reconstructed spectrogram:
 
 S_reconst = np.dot(D,X)
-# Y_reconst = np.sqrt(S_reconst)*np.exp(1j * Y_phase)
-# y_reconst = librosa.core.istft(Y_reconst,n_fft,hop_size)
+Y_reconst = np.sqrt(S_reconst)*np.exp(1j * Y_phase)
 
-# scipy.io.wavfile.write("y_reconst.wav", fs, y_reconst)
+istft=ISTFT( window=None, fft_size=n_fft, hop_size=hop_size, sample_rate=fs)
+y_reconst=istft.process(Y_reconst)
+
+plt.plot(y_reconst)
+
+
+scipy.io.wavfile.write("y_reconst.wav", fs, y_reconst)
 
 plt.figure(figsize=(12, 8))
 librosa.display.specshow(np.log(S_train+eps),fs,hop_size,x_axis="time", y_axis="log")
@@ -150,6 +156,7 @@ librosa.display.specshow(np.log(S_train+eps),fs,hop_size,x_axis="time", y_axis="
 plt.figure(figsize=(12, 8))
 librosa.display.specshow(np.log(S_reconst+eps),fs,hop_size,x_axis="time", y_axis="log")
 plt.show()
+
 
 
 
