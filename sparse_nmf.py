@@ -29,7 +29,7 @@ def sparse_nmf(mixture, fs_mix ):
     X_s=np.dot(D_s,H_s)
 
     istft=ISTFT( window=None, fft_size=n_fft, hop_size=hop_size, sample_rate=fs_train)
-    y_s=istft.process(np.sqrt(X_s)*phase_mixture)
+    y_s=istft.process(np.sqrt(X_s)*phase)
     y_s=y_s/np.max(y_s)
 
     return y_s
