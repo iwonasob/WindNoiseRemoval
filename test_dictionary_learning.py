@@ -41,9 +41,12 @@ gamma=2
 ## fft preprocessing
 wn_stft=librosa.core.stft(wn,n_fft,hop_size)
 y_stft=librosa.core.stft(y,n_fft,hop_size)
+x_stft=librosa.core.stft(x,n_fft,hop_size)
 
 log_spec_wn=librosa.logamplitude(np.abs(wn_stft))**gamma
 log_spec_y=librosa.logamplitude(np.abs(y_stft))**gamma
+log_spec_x=librosa.logamplitude(np.abs(x_stft))**gamma
+
 
 ## plot spectrograms
 # plt.figure(figsize=(12, 8))
@@ -63,10 +66,14 @@ D = pickle.load( open( "Dictionary_4atoms_10it.npy", "rb" ) )
 ## Decompose
 
 Y_mixture=librosa.core.stft(y,n_fft,hop_size)
-
 Y_mixture_mag, Y_mixture_phase = librosa.magphase(Y_mixture)
-
 S_mixture = Y_mixture_mag**gamma
+
+
+Y_speech=librosa.core.stft(x,n_fft,hop_size)
+Y_speech_mag, Y_speech_phase = librosa.magphase(Y_speech)
+S_speech = Y_speech_mag**gamma
+
 
 (n_frequencies, n_frames) = S_mixture.shape
 
@@ -85,15 +92,16 @@ X = np.zeros((n_atoms_tot, n_frames))
 
 # Load previously conputed dictionary:
 D_w = pickle.load( open( "Dictionary_16atoms_10it_10min.npy", "rb" ) )
+D_w = D_w.transpose() # bad saving
 
 # D_w = D_w.transpose()
-# a = np.sum(np.abs(D_w**2),axis=-1)**(1./2)	
-# D_w = np.dot(np.diag(1/a),D_w)
-# D_w = D_w.transpose()
+a = np.sum(np.abs(D_w**2),axis=-1)**(1./2)	
+D_w = np.dot(np.diag(1/a),D_w)
+D_w = D_w.transpose()
 
 
 # iterate:
-Nit = 4
+Nit = 10
 
 for it in range(Nit):
 	print("iteration:", it)
@@ -121,7 +129,7 @@ for it in range(Nit):
 	X_s = X[:n_atom, :]
 
 	# pseudo_inv = np.dot(X_s.transpose(), np.linalg.inv(np.dot(X_s, X_s.transpose())))
-	S_wind_curr = np.dot(D[:, :n_atom], X[n_atom:, :])
+	S_wind_curr = np.dot(D[:, n_atom:], X[n_atom:, :])
 	# D = np.dot(S_mixture - S_wind_curr, pseudo_inv)
 	# D_s = np.dot(S_mixture - S_wind_curr, pseudo_inv)
 
@@ -133,6 +141,8 @@ for it in range(Nit):
 	# # Normalize D:
 	# a = np.sum(np.abs(D_s**2),axis=-1)**(1./2)	
 	# D_s = np.dot(np.diag(1/a),D_s)
+	
+
 	D_s = D_s.transpose()
 
 
@@ -141,7 +151,7 @@ D = np.concatenate((D_s, D_w), axis=1)
 print(D.shape)
 print(X.shape)
 
-# PLot dictionary:
+# Plot dictionary:
 
 plt.figure(figsize=(12, 8))
 librosa.display.specshow(np.log(D+eps),fs,hop_size,x_axis="time", y_axis="log")
@@ -159,7 +169,17 @@ librosa.display.specshow(np.log(S_mixture+eps),fs,hop_size,x_axis="time", y_axis
 
 plt.figure(figsize=(12, 8))
 librosa.display.specshow(np.log(S_reconst+eps),fs,hop_size,x_axis="time", y_axis="log")
+
+
+
+
+## SEPARATION
+
+S_separated = np.dot(D[:, :n_atom], X[:n_atom, :])
+
+plt.figure(figsize=(12, 8))
+librosa.display.specshow(np.log(S_speech+eps),fs,hop_size,x_axis="time", y_axis="log")
+
+plt.figure(figsize=(12, 8))
+librosa.display.specshow(np.log(S_separated+eps),fs,hop_size,x_axis="time", y_axis="log")
 plt.show()
-
-
-

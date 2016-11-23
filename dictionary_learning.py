@@ -31,7 +31,7 @@ fs = 16000
 #############  STFT  #########################
 
 # # audio parameters
-sample_rate=16000
+
 n_fft=512 # 32 ms frame (like in paper)
 hop_size=128 # 75% overlap
 
@@ -140,15 +140,20 @@ librosa.display.specshow(np.log(D+eps),fs,hop_size,x_axis="time", y_axis="log")
 # Reconstructed spectrogram:
 
 S_reconst = np.dot(D,X)
-Y_reconst = np.sqrt(S_reconst)*np.exp(1j * Y_phase)
+S_reconst = S_reconst + 1e-8 * np.ones_like(S_reconst)
+
+S_reconst = S_reconst/np.max(abs(S_reconst))
+
+Y_reconst = np.sqrt(S_reconst)* Y_phase
+# Y_reconst = np.sqrt(S_reconst)
 
 istft=ISTFT( window=None, fft_size=n_fft, hop_size=hop_size, sample_rate=fs)
 y_reconst=istft.process(Y_reconst)
 
 plt.plot(y_reconst)
+plt.show()
 
-
-scipy.io.wavfile.write("y_reconst.wav", fs, y_reconst)
+# scipy.io.wavfile.write("y_reconst.wav", fs, y_reconst)
 
 plt.figure(figsize=(12, 8))
 librosa.display.specshow(np.log(S_train+eps),fs,hop_size,x_axis="time", y_axis="log")
