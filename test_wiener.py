@@ -3,9 +3,9 @@
 from WienerWindFilter import WienerWindFilter
 from benchmark import benchmark
 
-wwf = WienerWindFilter()
+wwf = WienerWindFilter(0, 0, 1024)
 
-f = lambda x, x_fs: wwf.apply(x)
-q = benchmark(f, 0, True)[0]
+f = lambda x, x_fs: wwf.apply(x, 128)
+b = benchmark(f, 0, True)
 
-print(q)
+print(b[0])
